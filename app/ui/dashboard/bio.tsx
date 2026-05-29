@@ -1,3 +1,5 @@
+// app/ui/dashboard/bio.tsx
+
 import Image from "next/image";
 import {
   getSingleArtisan,
@@ -38,20 +40,21 @@ export default async function ArtistDetail({
           width={400}
           height={400}
           className="rounded-lg object-cover"
+          priority
         />
 
-        <h1 className="text-3xl font-bold mt-6">
+        <h1 className="text-3xl font-bold mt-6 text-brown">
           {details.name}
         </h1>
 
-        <p className="mt-4 text-center text-gray-600 max-w-3xl">
+        <p className="mt-4 text-center text-gray-600 max-w-3xl text-lg">
           {details.story}
         </p>
       </div>
 
       {/* Artist Products */}
       <div>
-        <h2 className="text-2xl font-semibold mb-6">
+        <h2 className="text-2xl font-semibold mb-6 text-brown">
           Artist Creations
         </h2>
 
@@ -59,17 +62,18 @@ export default async function ArtistDetail({
           {items.map((item) => (
             <div
               key={item.id}
-              className="border rounded-lg p-4 shadow-sm"
+              className="border border-brown/20 rounded-lg p-4 shadow-sm bg-white"
             >
-              <Image
-                src={item.image_url}
-                alt={item.title}
-                width={300}
-                height={300}
-                className="rounded-md object-cover"
-              />
+              <div className="relative aspect-square overflow-hidden rounded-md bg-tan">
+                <Image
+                  src={item.image_url || "/images/blank-box.png"}
+                  alt={item.title}
+                  fill
+                  className="object-cover hover:scale-105 transition-transform duration-300"
+                />
+              </div>
 
-              <h3 className="text-lg font-medium mt-3">
+              <h3 className="text-lg font-medium mt-3 text-center text-brown">
                 {item.title}
               </h3>
             </div>
