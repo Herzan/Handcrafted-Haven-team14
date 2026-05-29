@@ -1,54 +1,81 @@
+import Image from "next/image";
+import {
+  getSingleArtisan,
+  fetchArtistItems,
+} from "@/app/lib/data";
 
+interface ArtistDetailProps {
+  id: string;
+}
 
-import Image from 'next/image';
-import { getSingleArtisan, fetchArtistItems } from '@/app/lib/data';
-import Link from 'next/link';
-
-export default async function ArtistDetail({params}: {params: {id: string}}) {
-  const id = params as unknown as string;
+export default async function ArtistDetail({
+  id,
+}: ArtistDetailProps) {
+  // Fetch artisan information
   const details = await getSingleArtisan(id);
+
+  // Fetch artisan products
   const items = await fetchArtistItems(id);
+
+  // If artisan does not exist
+  if (!details) {
+    return (
+      <div className="p-6">
+        <h1 className="text-2xl font-bold">
+          Artist not found
+        </h1>
+      </div>
+    );
+  }
+
   return (
-    <>
-          {details.map((link) => {
-        
-            return (
-              <div className="flex flex-col" key={link.id}>
-                
-                <div className="md:flex md:flex-row md:justify-between">
-                  <h1 className="text-5xl text-brown ">{link.name}</h1>
-                  <p className="text-base md:self-center">Star Rating</p>
-                </div>
-                <div className="md:flex md:flex-row">
-                  <Image className="object-scale-down md:size-96 lg:size-[36rem] xl:size-[40rem]" src={link.image_url} alt="person placeholder" height={3700}
-                    width={3700} />
-                  <div className="text-brown">
-                    <h3 className="md:ml-4">Artist Biography</h3>
-                    <p className="text-2xl text-brown md:text-xl md:mx-4">{link.story}</p>
-                  </div>
-                </div>
-                <h2 className="text-brown mt-6">Featured Creations</h2>
-                <div className="flex flex-wrap flex-row justify-evenly space-x-4">
-                  {items.map((link) => {
-                    return (
-                      <div className="" key={link.id}>
-                        <Link
-                          key={link.id}
-                          href={'/dashboard/products/' + link.id + '/detail'}
-                          className="" >
-                          <Image src={link.image_url} alt={link.id} priority={true} className="md:my-4 sm:size-44 md:size-60 xl:size-80 2xl:size-[24rem]" width={2250} height={4000} />
-                          <p className=" text-2xl">{link.title}</p>
-                        </Link>
-                      </div>
-                    );
-                  }
-                  )}
-                </div>
-                
-              </div>
-            );
-          
-      })}
-    </>
+    <div className="p-6 flex flex-col gap-10">
+      {/* Artist Profile */}
+      <div className="flex flex-col items-center">
+        <Image
+          src={details.image_url}
+          alt={details.name}
+          width={400}
+          height={400}
+          className="rounded-lg object-cover"
+        />
+
+        <h1 className="text-3xl font-bold mt-6">
+          {details.name}
+        </h1>
+
+        <p className="mt-4 text-center text-gray-600 max-w-3xl">
+          {details.story}
+        </p>
+      </div>
+
+      {/* Artist Products */}
+      <div>
+        <h2 className="text-2xl font-semibold mb-6">
+          Artist Creations
+        </h2>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          {items.map((item) => (
+            <div
+              key={item.id}
+              className="border rounded-lg p-4 shadow-sm"
+            >
+              <Image
+                src={item.image_url}
+                alt={item.title}
+                width={300}
+                height={300}
+                className="rounded-md object-cover"
+              />
+
+              <h3 className="text-lg font-medium mt-3">
+                {item.title}
+              </h3>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
