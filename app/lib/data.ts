@@ -1,3 +1,5 @@
+// app/lib/data.ts
+
 import { sql } from "@vercel/postgres";
 import { unstable_noStore as noStore } from "next/cache";
 
@@ -32,6 +34,22 @@ export async function getAllProductImages() {
   noStore();
 
   try {
+    // =========================
+    // TEST QUERY
+    // Verify item exists manually
+    // =========================
+    const test = await sql`
+      SELECT
+        id,
+        title
+      FROM items
+      WHERE id = '65836928-49b3-499a-a1d3-4437f2397efd';
+    `;
+
+    console.log("=== TEST QUERY ===");
+    console.log("Test query:", test.rows);
+    console.log("==================");
+
     const result = await sql`
       SELECT
         id,
@@ -47,11 +65,45 @@ export async function getAllProductImages() {
   }
 }
 
+/*
+WHY "Product not found" HAPPENS
+
+BEFORE:
+getProductDetail() returned:
+data.rows
+
+Which is an ARRAY:
+
+[
+  {
+    id: "...",
+    title: "Dream Catcher"
+  }
+]
+
+But the component expects ONE object:
+
+product.title
+
+NOT:
+
+product[0].title
+
+AFTER:
+Return ONLY the first row:
+return data.rows[0];
+
+Now:
+product.title
+
+works correctly.
+*/
+
 export async function getProductDetail(id: string) {
   noStore();
 
   try {
-    const product = await sql`
+    const data = await sql<Item>`
       SELECT
         items.id,
         items.artisan_id,
@@ -65,13 +117,22 @@ export async function getProductDetail(id: string) {
       FROM items
       JOIN artisans
         ON artisans.id = items.artisan_id
-      WHERE items.id = ${id}
+      WHERE items.id = ${id};
     `;
 
-    // Return ONE object
-    return product.rows[0];
+    // =========================
+    // DEBUG LOGGING
+    // =========================
+    console.log("=== PRODUCT DEBUG ===");
+    console.log("Requested ID:", id);
+    console.log("Rows returned:", data.rows.length);
+    console.log("First row:", data.rows[0]);
+    console.log("====================");
+
+    // Return ONE object instead of array
+    return data.rows[0] || null;
   } catch (error) {
-    console.error("Database Error", error);
+    console.error("Database Error:", error);
     throw new Error("Failed to fetch Product Details");
   }
 }
@@ -276,3 +337,29 @@ export async function fetchArtistItems(id: string) {
     throw new Error("Failed to fetch artist items.");
   }
 }
+
+/*
+OTHER THINGS TO CHECK
+
+1. Verify .env.local
+Make sure POSTGRES_URL points
+to the correct database.
+
+2. Check seed errors
+Look for foreign key violations
+during npm run seed.
+
+3. Verify dynamic route
+File:
+app/dashboard/products/[id]/detail/page.tsx
+
+Code:
+
+export default function Page({
+  params,
+}: {
+  params: { id: string };
+}) {
+  return <ProductDetail id={params.id} />;
+}
+*/
