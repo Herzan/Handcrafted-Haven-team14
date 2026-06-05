@@ -44,7 +44,7 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
 
       // Store token and update auth context
       login(data.token || 'logged-in');
-      router.push('/dashboard');
+      router.push('/dashboard/account');
 
     } catch (err) {
       setError('Something went wrong. Please try again.');
